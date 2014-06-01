@@ -15,7 +15,7 @@ window.onload = function () {
 
   game.state.start('boot');
 };
-},{"./states/boot":3,"./states/gameover":4,"./states/menu":5,"./states/play":6,"./states/preload":7}],2:[function(require,module,exports){
+},{"./states/boot":4,"./states/gameover":5,"./states/menu":6,"./states/play":7,"./states/preload":8}],2:[function(require,module,exports){
 'use strict';
 
 var Soldier = function(game, x, y, frame) {
@@ -24,9 +24,6 @@ var Soldier = function(game, x, y, frame) {
   this.anchor.setTo(0.5, 0.5);
   this.game.physics.arcade.enableBody(this);
   this.body.setSize(10, 14, 2, 1);
-
-  //  Allow cursors to scroll around the map
-  this.cursors = this.game.input.keyboard.createCursorKeys();
 
   // this.game.input.onDown.add(this.moveCommand, this);
   this.inputEnabled = true;
@@ -42,26 +39,7 @@ Soldier.prototype.constructor = Soldier;
 Soldier.prototype.update = function() {
 
   // write your prefab's specific update code here
-
-
   this.body.velocity.set(0);
-
-  if (this.cursors.left.isDown)
-  {
-      this.body.velocity.x = -100;
-  }
-  else if (this.cursors.right.isDown)
-  {
-      this.body.velocity.x = 100;
-  }
-  else if (this.cursors.up.isDown)
-  {
-      this.body.velocity.y = -100;
-  }
-  else if (this.cursors.down.isDown)
-  {
-      this.body.velocity.y = 100;
-  }
 
   if (this.moving) {
     // console.log("moving to " + this.moveTargetX + ":" + this.moveTargetY);
@@ -98,6 +76,29 @@ Soldier.prototype.moveAlongPath = function (path) {
 module.exports = Soldier;
 
 },{}],3:[function(require,module,exports){
+'use strict';
+
+var Zombie = function(game, x, y, frame) {
+  Phaser.Sprite.call(this, game, x, y, 'zombie', frame);
+
+  // initialize your prefab here
+  this.anchor.setTo(0.5, 0.5);
+  this.game.physics.arcade.enableBody(this);
+  this.body.setSize(10, 14, 2, 1);
+};
+
+Zombie.prototype = Object.create(Phaser.Sprite.prototype);
+Zombie.prototype.constructor = Zombie;
+
+Zombie.prototype.update = function() {
+
+  // write your prefab's specific update code here
+
+};
+
+module.exports = Zombie;
+
+},{}],4:[function(require,module,exports){
 
 'use strict';
 
@@ -116,7 +117,7 @@ Boot.prototype = {
 
 module.exports = Boot;
 
-},{}],4:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 
 'use strict';
 function GameOver() {}
@@ -144,7 +145,7 @@ GameOver.prototype = {
 };
 module.exports = GameOver;
 
-},{}],5:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 
 'use strict';
 function Menu() {}
@@ -176,11 +177,12 @@ Menu.prototype = {
 
 module.exports = Menu;
 
-},{}],6:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 
   'use strict';
 
   var Soldier = require('../prefabs/soldier');
+  var Zombie = require('../prefabs/zombie');
 
   function Play() {}
   Play.prototype = {
@@ -219,6 +221,10 @@ module.exports = Menu;
       this.pathfinder.setGrid(this.map.layers[0].data, [3]);
       console.log(this.game);
       this.game.input.onDown.add(this.clickListener, this);
+
+      // zombies
+      this.zombie = new Zombie(this.game, 450, 100);
+      this.game.add.existing(this.zombie);
     },
     update: function() {
       for (var i = 0, len = this.soldiers.length; i < len; i++) {
@@ -259,7 +265,7 @@ module.exports = Menu;
 
   module.exports = Play;
 
-},{"../prefabs/soldier":2}],7:[function(require,module,exports){
+},{"../prefabs/soldier":2,"../prefabs/zombie":3}],8:[function(require,module,exports){
 
 'use strict';
 function Preload() {
@@ -270,12 +276,6 @@ function Preload() {
 Preload.prototype = {
   preload: function() {
     console.log("preloading");
-    // this.asset = this.add.sprite(this.width/2,this.height/2, 'preloader');
-    // this.asset.anchor.setTo(0.5, 0.5);
-    //
-    // this.load.onLoadComplete.addOnce(this.onLoadComplete, this);
-    // this.load.setPreloadSprite(this.asset);
-    // this.load.image('yeoman', 'assets/yeoman-logo.png');
 
     // load tilemap and tileset
     this.game.load.tilemap('level', 'assets/tilemap.json', null, Phaser.Tilemap.TILED_JSON);
@@ -283,6 +283,8 @@ Preload.prototype = {
 
     // load player image
     this.game.load.spritesheet('soldier', 'assets/soldier.png', 16, 16);
+
+    this.game.load.spritesheet('zombie', 'assets/zombie.png', 16, 16);
 
     this.load.onLoadComplete.addOnce(this.onLoadComplete, this);
   },

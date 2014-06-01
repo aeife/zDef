@@ -8,12 +8,6 @@ function Preload() {
 Preload.prototype = {
   preload: function() {
     console.log("preloading");
-    // this.asset = this.add.sprite(this.width/2,this.height/2, 'preloader');
-    // this.asset.anchor.setTo(0.5, 0.5);
-    //
-    // this.load.onLoadComplete.addOnce(this.onLoadComplete, this);
-    // this.load.setPreloadSprite(this.asset);
-    // this.load.image('yeoman', 'assets/yeoman-logo.png');
 
     // load tilemap and tileset
     this.game.load.tilemap('level', 'assets/tilemap.json', null, Phaser.Tilemap.TILED_JSON);
@@ -21,6 +15,8 @@ Preload.prototype = {
 
     // load player image
     this.game.load.spritesheet('soldier', 'assets/soldier.png', 16, 16);
+
+    this.game.load.spritesheet('zombie', 'assets/zombie.png', 16, 16);
 
     this.load.onLoadComplete.addOnce(this.onLoadComplete, this);
   },

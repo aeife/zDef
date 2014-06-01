@@ -2,6 +2,7 @@
   'use strict';
 
   var Soldier = require('../prefabs/soldier');
+  var Zombie = require('../prefabs/zombie');
 
   function Play() {}
   Play.prototype = {
@@ -40,6 +41,10 @@
       this.pathfinder.setGrid(this.map.layers[0].data, [3]);
       console.log(this.game);
       this.game.input.onDown.add(this.clickListener, this);
+
+      // zombies
+      this.zombie = new Zombie(this.game, 450, 100);
+      this.game.add.existing(this.zombie);
     },
     update: function() {
       for (var i = 0, len = this.soldiers.length; i < len; i++) {

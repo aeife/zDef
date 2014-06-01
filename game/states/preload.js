@@ -19,6 +19,9 @@ Preload.prototype = {
     this.game.load.tilemap('level', 'assets/tilemap.json', null, Phaser.Tilemap.TILED_JSON);
     this.game.load.image('tiles', 'assets/tileset1.png');
 
+    // load player image
+    this.game.load.spritesheet('player', 'assets/player.png', 16, 16);
+
     this.load.onLoadComplete.addOnce(this.onLoadComplete, this);
   },
   create: function() {

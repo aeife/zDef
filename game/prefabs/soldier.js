@@ -11,6 +11,7 @@ var Soldier = function(game, x, y, frame) {
   this.cursors = this.game.input.keyboard.createCursorKeys();
 
   // this.game.input.onDown.add(this.moveCommand, this);
+  this.inputEnabled = true;
 
   this.moving = false;
   this.moveSpeed = 100;

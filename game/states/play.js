@@ -1,5 +1,8 @@
 
   'use strict';
+
+  var Soldier = require('../prefabs/soldier');
+
   function Play() {}
   Play.prototype = {
     create: function() {
@@ -32,39 +35,14 @@
       this.map.setCollision([2, 4], true);
       this.layer.debug = true;
 
-      //  Player
-      this.player = this.game.add.sprite(400, 16, 'player', 1);
-      this.game.physics.enable(this.player, Phaser.Physics.ARCADE);
-      this.player.body.setSize(10, 14, 2, 1);
-      //  Allow cursors to scroll around the map
-      this.cursors = this.game.input.keyboard.createCursorKeys();
+
+      // Create a new soldier object
+      this.soldier = new Soldier(this.game, 400, this.game.height/2);
+      // and add it to the game
+      this.game.add.existing(this.soldier);
     },
     update: function() {
-      this.game.physics.arcade.collide(this.player, this.layer);
-
-      this.player.body.velocity.set(0);
-
-      if (this.cursors.left.isDown)
-      {
-          this.player.body.velocity.x = -100;
-
-      }
-      else if (this.cursors.right.isDown)
-      {
-          this.player.body.velocity.x = 100;
-
-      }
-      else if (this.cursors.up.isDown)
-      {
-          this.player.body.velocity.y = -100;
-
-      }
-      else if (this.cursors.down.isDown)
-      {
-          this.player.body.velocity.y = 100;
-
-      }
-
+      this.game.physics.arcade.collide(this.soldier, this.layer);
     },
     clickListener: function() {
       this.game.state.start('gameover');

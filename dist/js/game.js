@@ -28,7 +28,7 @@ var Soldier = function(game, x, y, frame) {
   //  Allow cursors to scroll around the map
   this.cursors = this.game.input.keyboard.createCursorKeys();
 
-  this.game.input.onDown.add(this.moveCommand, this);
+  // this.game.input.onDown.add(this.moveCommand, this);
 
   this.moving = false;
   this.moveSpeed = 100;
@@ -71,24 +71,27 @@ Soldier.prototype.update = function() {
 
 Soldier.prototype.moveCommand = function (pointer) {
   this.moving = true;
-  this.moveTargetX = pointer.x;
-  this.moveTargetY = pointer.y;
+  this.movePath = [{x: pointer.x, y: pointer.y}];
 }
 
 Soldier.prototype.move = function () {
     var targetPrecision = 3;
+    this.moveTargetX = this.movePath[0].x * 16 + 8;
+    this.moveTargetY = this.movePath[0].y * 16 + 8;
     // check if target is reached
     if (Math.abs(this.world.x - this.moveTargetX) < targetPrecision && Math.abs(this.world.y - this.moveTargetY) < targetPrecision) {
-      this.moving = false;
+      this.movePath.shift();
+      if (this.movePath.length === 0) {
+        this.moving = false;
+      }
     }
     // this.rotation = this.game.physics.arcade.angleToPointer(this, pointer);
     this.game.physics.arcade.moveToXY(this, this.moveTargetX, this.moveTargetY, this.moveSpeed);
+}
 
-
-    //  300 = 300 pixels per second = the speed the sprite will move at, regardless of the distance it has to travel
-    // var duration = (this.game.physics.arcade.distanceToPointer(this, pointer) / 300) * 1000;
-    //
-    // var tween = this.game.add.tween(this).to({ x: pointer.x, y: pointer.y }, duration, Phaser.Easing.Linear.None, true);
+Soldier.prototype.moveAlongPath = function (path) {
+  this.moving = true;
+  this.movePath = path;
 }
 
 module.exports = Soldier;
@@ -183,20 +186,10 @@ module.exports = Menu;
     create: function() {
       console.log("create play");
       this.game.stage.backgroundColor = '#FFFFFF';
-      // this.game.physics.startSystem(Phaser.Physics.ARCADE);
-      // this.sprite = this.game.add.sprite(this.game.width/2, this.game.height/2, 'yeoman');
-      // this.sprite.inputEnabled = true;
-      //
-      // this.game.physics.arcade.enable(this.sprite);
-      // this.sprite.body.collideWorldBounds = true;
-      // this.sprite.body.bounce.setTo(1,1);
-      // this.sprite.body.velocity.x = this.game.rnd.integerInRange(-500,500);
-      // this.sprite.body.velocity.y = this.game.rnd.integerInRange(-500,500);
-      //
-      // this.sprite.events.onInputDown.add(this.clickListener, this);
 
       // load tilemap
       this.map = this.game.add.tilemap('level', 16, 16);
+      
       // load tileset
       this.tileset = this.map.addTilesetImage('tileset1', 'tiles');
       //  Create our layer
@@ -210,7 +203,6 @@ module.exports = Menu;
       this.map.setCollision([2, 4], true);
       this.layer.debug = true;
 
-
       // Create a new soldier object
       this.soldier = new Soldier(this.game, 400, this.game.height/2);
       // and add it to the game
@@ -218,41 +210,23 @@ module.exports = Menu;
 
       this.pathfinder = this.game.plugins.add(Phaser.Plugin.PathFinderPlugin);
       this.pathfinder.setGrid(this.map.layers[0].data, [3]);
+
+      this.game.input.onDown.add(this.findPathTo, this);
     },
     update: function() {
       this.game.physics.arcade.collide(this.soldier, this.layer);
-
-      var marker = {
-        x: this.layer.getTileX(this.game.input.activePointer.worldX) * 16,
-        y: this.layer.getTileY(this.game.input.activePointer.worldY) * 16
-      }
-      if (this.game.input.mousePointer.isDown)
-      {
-
-          this.findPathTo(this.layer.getTileX(marker.x), this.layer.getTileY(marker.y));
-      }
     },
     clickListener: function() {
       this.game.state.start('gameover');
     },
-    findPathTo: function (tilex, tiley) {
-        console.log("finding path to " + tilex + ":" + tiley);
-        var self = this;
-        this.pathfinder.setCallbackFunction(function(path) {
-            path = path || [];
-            console.log(path.length);
-            for(var i = 0, ilen = path.length; i < ilen; i++) {
-                console.log("putting tile");
-                self.map.putTile(1, path[i].x, path[i].y);
-            }
+    findPathTo: function (pointer) {
+      var self = this;
+      this.pathfinder.setCallbackFunction(function(path) {
+        self.soldier.moveAlongPath(path);
+      });
 
-        });
-
-        var fromX = this.layer.getTileX(this.soldier.world.x);
-        var fromY = this.layer.getTileX(this.soldier.world.y);
-        console.log("calculate from " + fromX + ":" + fromY);
-        this.pathfinder.preparePathCalculation([fromX, fromY], [tilex,tiley]);
-        this.pathfinder.calculatePath();
+      this.pathfinder.preparePathCalculation([this.layer.getTileX(this.soldier.world.x), this.layer.getTileY(this.soldier.world.y)], [this.layer.getTileX(pointer.x),this.layer.getTileY(pointer.y)]);
+      this.pathfinder.calculatePath();
     }
   };
 

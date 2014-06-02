@@ -56,6 +56,7 @@
     clickListener: function(pointer) {
       if (this.selectedSoldier) {
         this.findPathTo(pointer);
+        this.selectedSoldier = null;
       }
     },
     findPathTo: function (pointer) {

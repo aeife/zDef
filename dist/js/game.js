@@ -21,6 +21,8 @@ window.onload = function () {
 var Soldier = function(game, x, y, frame) {
   console.log("init soldier");
   Phaser.Sprite.call(this, game, x, y, 'soldier', frame);
+  game.add.existing(this);
+  
   this.anchor.setTo(0.5, 0.5);
   this.game.physics.arcade.enableBody(this);
   this.body.setSize(10, 14, 2, 1);
@@ -80,7 +82,8 @@ module.exports = Soldier;
 
 var Zombie = function(game, x, y, frame, soldiers, map, layer) {
   Phaser.Sprite.call(this, game, x, y, 'zombie', frame);
-
+  game.add.existing(this);
+  
   // initialize your prefab here
   this.anchor.setTo(0.5, 0.5);
   this.game.physics.arcade.enableBody(this);
@@ -157,7 +160,7 @@ Zombie.prototype.move = function () {
       this.moving = false;
     }
   }
-  
+
   this.game.physics.arcade.moveToXY(this, this.moveTargetX, this.moveTargetY, this.movingSpeed);
 }
 
@@ -294,7 +297,6 @@ module.exports = Menu;
       // zombies
       console.log(this.map);
       this.zombie = new Zombie(this.game, 450, 100, null, this.soldiers, this.map, this.layer);
-      this.game.add.existing(this.zombie);
     },
     update: function() {
       for (var i = 0, len = this.soldiers.length; i < len; i++) {
@@ -320,11 +322,9 @@ module.exports = Menu;
     soldiers: [],
     spawnSoldiers: function (soldierCount) {
       for (var i = 0; i < soldierCount; i++) {
-        var newSoldier = new Soldier(this.game, this.spawnLocations[i].x, this.spawnLocations[i].y);
-        this.soldiers.push(newSoldier);
-        this.game.add.existing(newSoldier);
+        this.soldiers.push(new Soldier(this.game, this.spawnLocations[i].x, this.spawnLocations[i].y));
         // add click listener
-        newSoldier.events.onInputDown.add(this.soldierClickListener, this);
+        this.soldiers[this.soldiers.length - 1].events.onInputDown.add(this.soldierClickListener, this);
       }
     },
     soldierClickListener: function (soldier) {

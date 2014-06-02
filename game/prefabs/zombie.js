@@ -2,7 +2,8 @@
 
 var Zombie = function(game, x, y, frame, soldiers, map, layer) {
   Phaser.Sprite.call(this, game, x, y, 'zombie', frame);
-
+  game.add.existing(this);
+  
   // initialize your prefab here
   this.anchor.setTo(0.5, 0.5);
   this.game.physics.arcade.enableBody(this);
@@ -79,7 +80,7 @@ Zombie.prototype.move = function () {
       this.moving = false;
     }
   }
-  
+
   this.game.physics.arcade.moveToXY(this, this.moveTargetX, this.moveTargetY, this.movingSpeed);
 }
 

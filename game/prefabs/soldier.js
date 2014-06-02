@@ -3,6 +3,8 @@
 var Soldier = function(game, x, y, frame) {
   console.log("init soldier");
   Phaser.Sprite.call(this, game, x, y, 'soldier', frame);
+  game.add.existing(this);
+  
   this.anchor.setTo(0.5, 0.5);
   this.game.physics.arcade.enableBody(this);
   this.body.setSize(10, 14, 2, 1);

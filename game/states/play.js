@@ -45,7 +45,6 @@
       // zombies
       console.log(this.map);
       this.zombie = new Zombie(this.game, 450, 100, null, this.soldiers, this.map, this.layer);
-      this.game.add.existing(this.zombie);
     },
     update: function() {
       for (var i = 0, len = this.soldiers.length; i < len; i++) {
@@ -71,11 +70,9 @@
     soldiers: [],
     spawnSoldiers: function (soldierCount) {
       for (var i = 0; i < soldierCount; i++) {
-        var newSoldier = new Soldier(this.game, this.spawnLocations[i].x, this.spawnLocations[i].y);
-        this.soldiers.push(newSoldier);
-        this.game.add.existing(newSoldier);
+        this.soldiers.push(new Soldier(this.game, this.spawnLocations[i].x, this.spawnLocations[i].y));
         // add click listener
-        newSoldier.events.onInputDown.add(this.soldierClickListener, this);
+        this.soldiers[this.soldiers.length - 1].events.onInputDown.add(this.soldierClickListener, this);
       }
     },
     soldierClickListener: function (soldier) {

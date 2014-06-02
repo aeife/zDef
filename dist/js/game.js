@@ -94,6 +94,7 @@ var Zombie = function(game, x, y, frame, soldiers, map, layer) {
   this.layer = layer;
 
   this.moving = false;
+  this.movingSpeed = 300;
 
   // instantly start attacking nearest soldier
   this.attack();
@@ -103,17 +104,11 @@ Zombie.prototype = Object.create(Phaser.Sprite.prototype);
 Zombie.prototype.constructor = Zombie;
 
 
-
-// write your prefab's specific update code here
-
-
 Zombie.prototype.update = function() {
   this.body.velocity.set(0);
   if (this.moving) {
-    console.log("moving");
     this.move();
   }
-
 };
 
 Zombie.prototype.attack = function () {
@@ -152,19 +147,18 @@ Zombie.prototype.calculatePathToTarget = function (target) {
 
 Zombie.prototype.move = function () {
   console.log ("navigate to " + this.movePath[0].x + ":" + this.movePath[0].y);
-  var targetPrecision = 5;
+  var targetPrecision = 10;
   this.moveTargetX = this.movePath[0].x * 16 + 8;
   this.moveTargetY = this.movePath[0].y * 16 + 8;
   // check if target is reached
   if (Math.abs(this.world.x - this.moveTargetX) < targetPrecision && Math.abs(this.world.y - this.moveTargetY) < targetPrecision) {
     this.movePath.shift();
     if (this.movePath.length === 0) {
-      console.log("STOP");
       this.moving = false;
     }
   }
-  // this.rotation = this.game.physics.arcade.angleToPointer(this, pointer);
-  this.game.physics.arcade.moveToXY(this, this.moveTargetX, this.moveTargetY, 100);
+  
+  this.game.physics.arcade.moveToXY(this, this.moveTargetX, this.moveTargetY, this.movingSpeed);
 }
 
 Zombie.prototype.getDistanceTo = function (x, y) {

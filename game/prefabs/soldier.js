@@ -17,8 +17,6 @@ var Soldier = function(game, x, y, frame, map, layer) {
 
   this.moving = false;
   this.moveSpeed = 100;
-
-  this.cursors = this.game.input.keyboard.createCursorKeys();
 };
 
 Soldier.prototype = Object.create(Human.prototype);
@@ -32,30 +30,6 @@ Soldier.prototype.update = function() {
   if (this.moving) {
     this.move();
   }
-
-  if (this.cursors.left.isDown)
-    {
-        this.body.rotateLeft(100);
-    }
-    else if (this.cursors.right.isDown)
-    {
-        this.body.rotateRight(100);
-    }
-    else
-    {
-        this.body.setZeroRotation();
-    }
-
-    if (this.cursors.up.isDown)
-    {
-        this.body.thrust(400);
-    }
-    else if (this.cursors.down.isDown)
-    {
-        this.body.reverse(400);
-    }
-
-
 };
 
 Soldier.prototype.moveCommand = function (pointer) {

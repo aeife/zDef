@@ -137,8 +137,6 @@ var Soldier = function(game, x, y, frame, map, layer) {
 
   this.moving = false;
   this.moveSpeed = 100;
-
-  this.cursors = this.game.input.keyboard.createCursorKeys();
 };
 
 Soldier.prototype = Object.create(Human.prototype);
@@ -152,30 +150,6 @@ Soldier.prototype.update = function() {
   if (this.moving) {
     this.move();
   }
-
-  if (this.cursors.left.isDown)
-    {
-        this.body.rotateLeft(100);
-    }
-    else if (this.cursors.right.isDown)
-    {
-        this.body.rotateRight(100);
-    }
-    else
-    {
-        this.body.setZeroRotation();
-    }
-
-    if (this.cursors.up.isDown)
-    {
-        this.body.thrust(400);
-    }
-    else if (this.cursors.down.isDown)
-    {
-        this.body.reverse(400);
-    }
-
-
 };
 
 Soldier.prototype.moveCommand = function (pointer) {
@@ -332,7 +306,6 @@ module.exports = Menu;
 
   var Soldier = require('../prefabs/soldier');
   var Zombie = require('../prefabs/zombie');
-  var cursors, ship;
 
   function Play() {}
   Play.prototype = {
@@ -351,9 +324,6 @@ module.exports = Menu;
       this.layer = this.map.createLayer('Walls');
       this.layer.resizeWorld();
       this.physics.p2.convertTilemap(this.map, this.layer);
-
-      ship = this.game.add.sprite(300, 350, 'soldier');
-      this.game.physics.p2.enable(ship);
       this.game.physics.p2.setBoundsToWorld(true, true, true, true, false);
       // this.layer.debug = true;
 

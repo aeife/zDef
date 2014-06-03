@@ -3,7 +3,6 @@
 
   var Soldier = require('../prefabs/soldier');
   var Zombie = require('../prefabs/zombie');
-  var cursors, ship;
 
   function Play() {}
   Play.prototype = {
@@ -22,9 +21,6 @@
       this.layer = this.map.createLayer('Walls');
       this.layer.resizeWorld();
       this.physics.p2.convertTilemap(this.map, this.layer);
-
-      ship = this.game.add.sprite(300, 350, 'soldier');
-      this.game.physics.p2.enable(ship);
       this.game.physics.p2.setBoundsToWorld(true, true, true, true, false);
       // this.layer.debug = true;
 

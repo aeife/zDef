@@ -15,7 +15,7 @@
       this.game.stage.backgroundColor = '#FFFFFF';
 
       this.map = this.game.add.tilemap('map');
-     this.map.addTilesetImage('tileset1');
+      this.map.addTilesetImage('tileset1');
 
 
       this.layerBg = this.map.createLayer('Background');
@@ -39,6 +39,22 @@
       ];
 
       this.spawnSoldiers(3);
+      this.zombie = new Zombie(this.game, 420, 55, null, this.soldiers, this.map, this.layerBg);
+      // this.zombie = new Zombie(this.game, 440, 55, null, this.soldiers, this.map, this.layerBg);
+      // this.zombie = new Zombie(this.game, 460, 55, null, this.soldiers, this.map, this.layerBg);
+      // this.zombie = new Zombie(this.game, 480, 55, null, this.soldiers, this.map, this.layerBg);
+      // this.zombie = new Zombie(this.game, 500, 55, null, this.soldiers, this.map, this.layerBg);
+      // this.zombie = new Zombie(this.game, 520, 55, null, this.soldiers, this.map, this.layerBg);
+      // this.zombie = new Zombie(this.game, 540, 55, null, this.soldiers, this.map, this.layerBg);
+      // this.zombie = new Zombie(this.game, 560, 55, null, this.soldiers, this.map, this.layerBg);
+      // this.zombie = new Zombie(this.game, 420, 35, null, this.soldiers, this.map, this.layerBg);
+      // this.zombie = new Zombie(this.game, 440, 35, null, this.soldiers, this.map, this.layerBg);
+      // this.zombie = new Zombie(this.game, 460, 35, null, this.soldiers, this.map, this.layerBg);
+      // this.zombie = new Zombie(this.game, 480, 35, null, this.soldiers, this.map, this.layerBg);
+      // this.zombie = new Zombie(this.game, 500, 35, null, this.soldiers, this.map, this.layerBg);
+      // this.zombie = new Zombie(this.game, 520, 35, null, this.soldiers, this.map, this.layerBg);
+      // this.zombie = new Zombie(this.game, 540, 35, null, this.soldiers, this.map, this.layerBg);
+      // this.zombie = new Zombie(this.game, 560, 35, null, this.soldiers, this.map, this.layerBg);
 
       this.game.input.onDown.add(this.clickListener, this);
     },

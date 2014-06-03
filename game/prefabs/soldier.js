@@ -8,7 +8,7 @@ var Soldier = function(game, x, y, frame, map, layer) {
   game.add.existing(this);
 
   this.anchor.setTo(0.5, 0.5);
-  this.game.physics.p2.enable(this, true);
+  this.game.physics.p2.enable(this);
   this.body.setCircle(8);
   this.body.mass = 9999;
 
@@ -61,8 +61,6 @@ Soldier.prototype.update = function() {
 Soldier.prototype.moveCommand = function (pointer) {
   this.calculatePathToTarget(pointer.x, pointer.y);
 }
-
-
 
 Soldier.prototype.moveAlongPath = function (path) {
   this.moving = true;

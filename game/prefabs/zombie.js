@@ -3,34 +3,29 @@
 var Human = require('./human');
 
 var Zombie = function(game, x, y, frame, soldiers, map, layer) {
-  Phaser.Sprite.call(this, game, x, y, 'zombie', frame);
-  Human.call(this, game, map, layer);
-  game.add.existing(this, this.game, this.map, this.layer);
+  Human.call(this, game, x, y, 'zombie', map, layer);
+  game.add.existing(this);
 
-  // initialize your prefab here
   this.anchor.setTo(0.5, 0.5);
-  this.game.physics.arcade.enableBody(this);
-  this.body.setSize(10, 14, 2, 1);
+  this.game.physics.p2.enable(this);
+  this.body.setCircle(16);
+  this.body.mass = 9999;
 
   this.soldiers = soldiers;
-  console.log(this.soldiers)
   this.map = map;
-  this.pathfinder = this.game.plugins.add(Phaser.Plugin.PathFinderPlugin);
-  this.pathfinder.setGrid(this.map.layers[0].data, [3]);
   this.layer = layer;
 
-  this.moveSpeed = 110;
+  this.moving = false;
+  this.moveSpeed = 150;
 
   // instantly start attacking nearest soldier
-  // this.attack();
+  this.attack();
 };
 
 Zombie.prototype = Object.create(Human.prototype);
 Zombie.prototype.constructor = Zombie;
 
-
 Zombie.prototype.update = function() {
-  this.body.velocity.set(0);
   if (this.moving) {
     this.move();
   }
@@ -38,8 +33,8 @@ Zombie.prototype.update = function() {
 
 Zombie.prototype.attack = function () {
   // calculate nearest soldier and start moving towards it
-  console.log(this.getNearestSoldier());
-  this.calculatePathToTarget(this.getNearestSoldier());
+  var nearestSoldier = this.getNearestSoldier();
+  this.calculatePathToTarget(nearestSoldier.x, nearestSoldier.y);
 }
 
 Zombie.prototype.getNearestSoldier = function () {

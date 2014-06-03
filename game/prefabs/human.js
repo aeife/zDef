@@ -1,9 +1,6 @@
 'use strict';
 
 var Human = function(game, x, y, key, map, layer) {
-  console.log("CONSTRUCTOR");
-  console.log(game);
-  console.log(map);
   Phaser.Sprite.call(this, game, x, y, key);
 
   this.game = game;

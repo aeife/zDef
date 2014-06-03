@@ -10,11 +10,14 @@ Preload.prototype = {
     console.log("preloading");
 
     // load tilemap and tileset
-    this.game.load.tilemap('level', 'assets/tilemap.json', null, Phaser.Tilemap.TILED_JSON);
-    this.game.load.image('tiles', 'assets/tileset1.png');
+    this.game.load.tilemap('map', 'assets/tilemap.json', null, Phaser.Tilemap.TILED_JSON);
+    this.game.load.image('tileset1', 'assets/tileset1.png');
+    this.game.load.image('ground_1x1', 'assets/tiles/ground_1x1.png');
+    this.game.load.image('walls_1x2', 'assets/tiles/walls_1x2.png');
+    this.game.load.image('tiles2', 'assets/tiles/tiles2.png');
 
     // load player image
-    this.game.load.spritesheet('soldier', 'assets/soldier.png', 16, 16);
+    this.game.load.image('soldier', 'assets/soldier.png');
 
     this.game.load.spritesheet('zombie', 'assets/zombie.png', 16, 16);
 

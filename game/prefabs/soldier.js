@@ -8,14 +8,17 @@ var Soldier = function(game, x, y, frame, map, layer) {
   game.add.existing(this);
 
   this.anchor.setTo(0.5, 0.5);
-  this.game.physics.arcade.enableBody(this);
-  this.body.setSize(10, 14, 2, 1);
+  this.game.physics.p2.enable(this, true);
+  this.body.setCircle(8);
+  this.body.mass = 9999;
 
   // this.game.input.onDown.add(this.moveCommand, this);
   this.inputEnabled = true;
 
   this.moving = false;
   this.moveSpeed = 100;
+
+  this.cursors = this.game.input.keyboard.createCursorKeys();
 };
 
 Soldier.prototype = Object.create(Human.prototype);
@@ -27,11 +30,31 @@ Soldier.prototype.update = function() {
   // this.body.velocity.set(0);
 
   if (this.moving) {
-    this.body.moves = true;
     this.move();
-  } else {
-    this.body.moves = false;
   }
+
+  if (this.cursors.left.isDown)
+    {
+        this.body.rotateLeft(100);
+    }
+    else if (this.cursors.right.isDown)
+    {
+        this.body.rotateRight(100);
+    }
+    else
+    {
+        this.body.setZeroRotation();
+    }
+
+    if (this.cursors.up.isDown)
+    {
+        this.body.thrust(400);
+    }
+    else if (this.cursors.down.isDown)
+    {
+        this.body.reverse(400);
+    }
+
 
 };
 

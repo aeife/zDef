@@ -35,7 +35,7 @@ var Human = function(game, x, y, key, map, layer) {
 
   // move attributes
   this.movePath = null;
-  this.targetPrecision = 5;
+  this.targetPrecision = 3;
   this.moving = false;
   this.moveSpeed = 100;
 };
@@ -45,28 +45,35 @@ Human.prototype.constructor = Human;
 
 Human.prototype.move = function () {
     // check if target is reached
+    // console.log(this.body.velocity.y);
+    this.moveToXY(this.getCurrentMoveTarget().x, this.getCurrentMoveTarget().y, this.moveSpeed);
     if (Math.abs(this.world.x - this.getCurrentMoveTarget().x) < this.targetPrecision && Math.abs(this.world.y - this.getCurrentMoveTarget().y) < this.targetPrecision) {
       this.movePath.shift();
-      if (this.movePath.length === 0) {
+      if (this.movePath.length !== 0) {
+        console.log("checkpoint reached, going to next");
+        // this.rotation = this.game.physics.arcade.angleToPointer(this, pointer);
+        
+      } else {
         console.log("target reached");
         this.stopMoving();
-      } else {
-        // this.rotation = this.game.physics.arcade.angleToPointer(this, pointer);
-        this.game.physics.arcade.moveToXY(this, this.getCurrentMoveTarget().x, this.getCurrentMoveTarget().y, this.moveSpeed);
       }
     }
 }
 
 Human.prototype.startMoving = function () {
   this.moving = true;
-  this.body.moves = true;
-  var target = this.getCurrentMoveTarget();
-  this.game.physics.arcade.moveToXY(this, target.x, target.y, this.moveSpeed);
+  console.log("START ");
+  console.log(this.body);
+//  this.body.moves = true;
+  // var target = this.getCurrentMoveTarget();
+  // this.game.physics.arcade.moveToXY(this, target.x, target.y, this.moveSpeed);
 }
 
 Human.prototype.stopMoving = function () {
+  console.log("stop moving");
   this.moving = false;
-  this.body.moves = false;
+  this.body.velocity.x = 0;
+  this.body.velocity.y = 0;
 }
 
 Human.prototype.getCurrentMoveTarget = function () {
@@ -81,6 +88,10 @@ Human.prototype.calculatePathToTarget = function (targetX, targetY) {
   this.pathfinder = this.game.plugins.add(Phaser.Plugin.PathFinderPlugin);
   this.pathfinder.setGrid(this.map.layers[0].data, [3]);
   this.pathfinder.setCallbackFunction(function(path) {
+    // for(var i = 0, ilen = path.length; i < ilen; i++) {
+    //       self.map.putTile(1, path[i].x, path[i].y);
+    //   }
+    console.log("calculated path");
     self.movePath = path;
     console.log(self.movePath);
     console.log(path[path.length - 1].x);
@@ -93,6 +104,16 @@ Human.prototype.calculatePathToTarget = function (targetX, targetY) {
 
 Human.prototype.getDistanceTo = function (x, y) {
   return (Math.abs(this.world.x - x) + Math.abs(this.world.y - y)) / 2;
+}
+
+Human.prototype.moveToXY = function (x, y, speed) {
+  console.log()
+    var dx = this.body.x - x;
+    var dy = this.body.y - y;
+    this.body.rotation = Math.atan2(dy, dx) + this.game.math.degToRad(90);
+    var angle = this.body.rotation + (Math.PI / 2);
+    this.body.velocity.x = speed * Math.cos(angle);
+    this.body.velocity.y = speed * Math.sin(angle);
 }
 
 
@@ -110,14 +131,17 @@ var Soldier = function(game, x, y, frame, map, layer) {
   game.add.existing(this);
 
   this.anchor.setTo(0.5, 0.5);
-  this.game.physics.arcade.enableBody(this);
-  this.body.setSize(10, 14, 2, 1);
+  this.game.physics.p2.enable(this, true);
+  this.body.setCircle(8);
+  this.body.mass = 9999;
 
   // this.game.input.onDown.add(this.moveCommand, this);
   this.inputEnabled = true;
 
   this.moving = false;
   this.moveSpeed = 100;
+
+  this.cursors = this.game.input.keyboard.createCursorKeys();
 };
 
 Soldier.prototype = Object.create(Human.prototype);
@@ -129,11 +153,31 @@ Soldier.prototype.update = function() {
   // this.body.velocity.set(0);
 
   if (this.moving) {
-    this.body.moves = true;
     this.move();
-  } else {
-    this.body.moves = false;
   }
+
+  if (this.cursors.left.isDown)
+    {
+        this.body.rotateLeft(100);
+    }
+    else if (this.cursors.right.isDown)
+    {
+        this.body.rotateRight(100);
+    }
+    else
+    {
+        this.body.setZeroRotation();
+    }
+
+    if (this.cursors.up.isDown)
+    {
+        this.body.thrust(400);
+    }
+    else if (this.cursors.down.isDown)
+    {
+        this.body.reverse(400);
+    }
+
 
 };
 
@@ -298,28 +342,31 @@ module.exports = Menu;
 
   var Soldier = require('../prefabs/soldier');
   var Zombie = require('../prefabs/zombie');
+  var cursors, ship;
 
   function Play() {}
   Play.prototype = {
     create: function() {
       console.log("create play");
+      this.game.physics.startSystem(Phaser.Physics.P2JS);
+    
+
       this.game.stage.backgroundColor = '#FFFFFF';
 
-      // load tilemap
-      this.map = this.game.add.tilemap('level', 16, 16);
+      this.map = this.game.add.tilemap('map');
+     this.map.addTilesetImage('tileset1');
 
-      // load tileset
-      this.tileset = this.map.addTilesetImage('tileset1', 'tiles');
-      //  Create our layer
-      this.layer = this.map.createLayer(0);
-      // this.layer = this.map.createBlankLayer('Bg');
 
-      //  Resize the world
+      this.layerBg = this.map.createLayer('Background');
+      this.layer = this.map.createLayer('Walls');
       this.layer.resizeWorld();
+      this.physics.p2.convertTilemap(this.map, this.layer);
 
-      //  set tiles collision
-      this.map.setCollision([2, 4], true);
+      ship = this.game.add.sprite(300, 350, 'soldier');
+      this.game.physics.p2.enable(ship);
+      this.game.physics.p2.setBoundsToWorld(true, true, true, true, false);
       // this.layer.debug = true;
+
       this.spawnLocations = [
         {x: 300, y: 370},
         {x: 320, y: 370},
@@ -332,32 +379,15 @@ module.exports = Menu;
 
       this.spawnSoldiers(3);
 
-      this.pathfinder = this.game.plugins.add(Phaser.Plugin.PathFinderPlugin);
-      this.pathfinder.setGrid(this.map.layers[0].data, [3]);
-      console.log(this.game);
       this.game.input.onDown.add(this.clickListener, this);
-
-      // zombies
-      console.log(this.map);
-      // this.zombie = new Zombie(this.game, 450, 100, null, this.soldiers, this.map, this.layer);
     },
     update: function() {
-      for (var i = 0, len = this.soldiers.length; i < len; i++) {
-        this.game.physics.arcade.collide(this.soldiers[i], this.layer);
-        // TODO: collision soldier - soldier
-      }
-    },
-    clickListener: function(pointer) {
-      if (this.selectedSoldier) {
-        this.selectedSoldier.moveCommand(pointer);
-        // this.findPathTo(pointer);
-        this.selectedSoldier = null;
-      }
+
     },
     soldiers: [],
     spawnSoldiers: function (soldierCount) {
       for (var i = 0; i < soldierCount; i++) {
-        this.soldiers.push(new Soldier(this.game, this.spawnLocations[i].x, this.spawnLocations[i].y, null, this.map, this.layer));
+        this.soldiers.push(new Soldier(this.game, this.spawnLocations[i].x, this.spawnLocations[i].y, null, this.map, this.layerBg));
         // add click listener
         this.soldiers[this.soldiers.length - 1].events.onInputDown.add(this.soldierClickListener, this);
       }
@@ -366,7 +396,17 @@ module.exports = Menu;
       console.log("clicked");
       console.log(soldier);
       this.selectedSoldier = soldier;
+    },
+    clickListener: function(pointer) {
+      if (this.selectedSoldier) {
+        this.selectedSoldier.moveCommand(pointer);
+        // this.findPathTo(pointer);
+        this.selectedSoldier = null;
+      }
     }
+
+
+
   };
 
   module.exports = Play;
@@ -384,11 +424,14 @@ Preload.prototype = {
     console.log("preloading");
 
     // load tilemap and tileset
-    this.game.load.tilemap('level', 'assets/tilemap.json', null, Phaser.Tilemap.TILED_JSON);
-    this.game.load.image('tiles', 'assets/tileset1.png');
+    this.game.load.tilemap('map', 'assets/tilemap.json', null, Phaser.Tilemap.TILED_JSON);
+    this.game.load.image('tileset1', 'assets/tileset1.png');
+    this.game.load.image('ground_1x1', 'assets/tiles/ground_1x1.png');
+    this.game.load.image('walls_1x2', 'assets/tiles/walls_1x2.png');
+    this.game.load.image('tiles2', 'assets/tiles/tiles2.png');
 
     // load player image
-    this.game.load.spritesheet('soldier', 'assets/soldier.png', 16, 16);
+    this.game.load.image('soldier', 'assets/soldier.png');
 
     this.game.load.spritesheet('zombie', 'assets/zombie.png', 16, 16);
 

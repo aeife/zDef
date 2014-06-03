@@ -24,10 +24,13 @@ Soldier.prototype.constructor = Soldier;
 Soldier.prototype.update = function() {
 
   // write your prefab's specific update code here
-  this.body.velocity.set(0);
+  // this.body.velocity.set(0);
 
   if (this.moving) {
+    this.body.moves = true;
     this.move();
+  } else {
+    this.body.moves = false;
   }
 
 };

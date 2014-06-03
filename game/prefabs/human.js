@@ -26,23 +26,36 @@ Human.prototype = Object.create(Phaser.Sprite.prototype);
 Human.prototype.constructor = Human;
 
 Human.prototype.move = function () {
-  console.log(this.moveSpeed);
-
-    this.moveTargetX = this.movePath[0].x * 16 + 8;
-    this.moveTargetY = this.movePath[0].y * 16 + 8;
-    console.log(Math.abs(this.world.x - this.moveTargetX));
     // check if target is reached
-    if (Math.abs(this.world.x - this.moveTargetX) < this.targetPrecision && Math.abs(this.world.y - this.moveTargetY) < this.targetPrecision) {
+    if (Math.abs(this.world.x - this.getCurrentMoveTarget().x) < this.targetPrecision && Math.abs(this.world.y - this.getCurrentMoveTarget().y) < this.targetPrecision) {
       this.movePath.shift();
       if (this.movePath.length === 0) {
         console.log("target reached");
-        this.moving = false;
+        this.stopMoving();
+      } else {
+        // this.rotation = this.game.physics.arcade.angleToPointer(this, pointer);
+        this.game.physics.arcade.moveToXY(this, this.getCurrentMoveTarget().x, this.getCurrentMoveTarget().y, this.moveSpeed);
       }
     }
-    // this.rotation = this.game.physics.arcade.angleToPointer(this, pointer);
-    console.log("move from: " + this.world.x + ":" + this.world.y + " to: " + this.moveTargetX + ":" + this.moveTargetY);
-    console.log("speed: " + this.moveSpeed);
-    this.game.physics.arcade.moveToXY(this, this.moveTargetX, this.moveTargetY, this.moveSpeed);
+}
+
+Human.prototype.startMoving = function () {
+  this.moving = true;
+  this.body.moves = true;
+  var target = this.getCurrentMoveTarget();
+  this.game.physics.arcade.moveToXY(this, target.x, target.y, this.moveSpeed);
+}
+
+Human.prototype.stopMoving = function () {
+  this.moving = false;
+  this.body.moves = false;
+}
+
+Human.prototype.getCurrentMoveTarget = function () {
+  return {
+    x: this.movePath[0].x * 16 + 8,
+    y: this.movePath[0].y * 16 + 8
+  }
 }
 
 Human.prototype.calculatePathToTarget = function (targetX, targetY) {
@@ -50,10 +63,10 @@ Human.prototype.calculatePathToTarget = function (targetX, targetY) {
   this.pathfinder = this.game.plugins.add(Phaser.Plugin.PathFinderPlugin);
   this.pathfinder.setGrid(this.map.layers[0].data, [3]);
   this.pathfinder.setCallbackFunction(function(path) {
-    self.moving = true;
-    console.log(self.movePath);
     self.movePath = path;
+    console.log(self.movePath);
     console.log(path[path.length - 1].x);
+    self.startMoving();
   });
 
   this.pathfinder.preparePathCalculation([this.layer.getTileX(this.world.x), this.layer.getTileY(this.world.y)], [this.layer.getTileX(targetX), this.layer.getTileY(targetY)]);

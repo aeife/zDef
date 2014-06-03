@@ -1,10 +1,12 @@
 'use strict';
+var Human = require('./human');
 
-var Soldier = function(game, x, y, frame) {
+var Soldier = function(game, x, y, frame, map, layer) {
   console.log("init soldier");
-  Phaser.Sprite.call(this, game, x, y, 'soldier', frame);
+  Human.call(this, game, x, y, 'soldier', map, layer);
+
   game.add.existing(this);
-  
+
   this.anchor.setTo(0.5, 0.5);
   this.game.physics.arcade.enableBody(this);
   this.body.setSize(10, 14, 2, 1);
@@ -14,10 +16,9 @@ var Soldier = function(game, x, y, frame) {
 
   this.moving = false;
   this.moveSpeed = 100;
-  console.log(this);
 };
 
-Soldier.prototype = Object.create(Phaser.Sprite.prototype);
+Soldier.prototype = Object.create(Human.prototype);
 Soldier.prototype.constructor = Soldier;
 
 Soldier.prototype.update = function() {
@@ -26,31 +27,16 @@ Soldier.prototype.update = function() {
   this.body.velocity.set(0);
 
   if (this.moving) {
-    // console.log("moving to " + this.moveTargetX + ":" + this.moveTargetY);
     this.move();
   }
 
 };
 
 Soldier.prototype.moveCommand = function (pointer) {
-  this.moving = true;
-  this.movePath = [{x: pointer.x, y: pointer.y}];
+  this.calculatePathToTarget(pointer.x, pointer.y);
 }
 
-Soldier.prototype.move = function () {
-    var targetPrecision = 3;
-    this.moveTargetX = this.movePath[0].x * 16 + 8;
-    this.moveTargetY = this.movePath[0].y * 16 + 8;
-    // check if target is reached
-    if (Math.abs(this.world.x - this.moveTargetX) < targetPrecision && Math.abs(this.world.y - this.moveTargetY) < targetPrecision) {
-      this.movePath.shift();
-      if (this.movePath.length === 0) {
-        this.moving = false;
-      }
-    }
-    // this.rotation = this.game.physics.arcade.angleToPointer(this, pointer);
-    this.game.physics.arcade.moveToXY(this, this.moveTargetX, this.moveTargetY, this.moveSpeed);
-}
+
 
 Soldier.prototype.moveAlongPath = function (path) {
   this.moving = true;

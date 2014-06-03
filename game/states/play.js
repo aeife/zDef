@@ -44,7 +44,7 @@
 
       // zombies
       console.log(this.map);
-      this.zombie = new Zombie(this.game, 450, 100, null, this.soldiers, this.map, this.layer);
+      // this.zombie = new Zombie(this.game, 450, 100, null, this.soldiers, this.map, this.layer);
     },
     update: function() {
       for (var i = 0, len = this.soldiers.length; i < len; i++) {
@@ -54,23 +54,15 @@
     },
     clickListener: function(pointer) {
       if (this.selectedSoldier) {
-        this.findPathTo(pointer);
+        this.selectedSoldier.moveCommand(pointer);
+        // this.findPathTo(pointer);
         this.selectedSoldier = null;
       }
-    },
-    findPathTo: function (pointer) {
-      var self = this;
-      this.pathfinder.setCallbackFunction(function(path) {
-        self.selectedSoldier.moveAlongPath(path);
-      });
-
-      this.pathfinder.preparePathCalculation([this.layer.getTileX(this.selectedSoldier.world.x), this.layer.getTileY(this.selectedSoldier.world.y)], [this.layer.getTileX(pointer.x),this.layer.getTileY(pointer.y)]);
-      this.pathfinder.calculatePath();
     },
     soldiers: [],
     spawnSoldiers: function (soldierCount) {
       for (var i = 0; i < soldierCount; i++) {
-        this.soldiers.push(new Soldier(this.game, this.spawnLocations[i].x, this.spawnLocations[i].y));
+        this.soldiers.push(new Soldier(this.game, this.spawnLocations[i].x, this.spawnLocations[i].y, null, this.map, this.layer));
         // add click listener
         this.soldiers[this.soldiers.length - 1].events.onInputDown.add(this.soldierClickListener, this);
       }

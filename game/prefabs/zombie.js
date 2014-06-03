@@ -1,9 +1,12 @@
 'use strict';
 
+var Human = require('./human');
+
 var Zombie = function(game, x, y, frame, soldiers, map, layer) {
   Phaser.Sprite.call(this, game, x, y, 'zombie', frame);
-  game.add.existing(this);
-  
+  Human.call(this, game, map, layer);
+  game.add.existing(this, this.game, this.map, this.layer);
+
   // initialize your prefab here
   this.anchor.setTo(0.5, 0.5);
   this.game.physics.arcade.enableBody(this);
@@ -16,14 +19,13 @@ var Zombie = function(game, x, y, frame, soldiers, map, layer) {
   this.pathfinder.setGrid(this.map.layers[0].data, [3]);
   this.layer = layer;
 
-  this.moving = false;
-  this.movingSpeed = 300;
+  this.moveSpeed = 110;
 
   // instantly start attacking nearest soldier
-  this.attack();
+  // this.attack();
 };
 
-Zombie.prototype = Object.create(Phaser.Sprite.prototype);
+Zombie.prototype = Object.create(Human.prototype);
 Zombie.prototype.constructor = Zombie;
 
 
@@ -36,6 +38,7 @@ Zombie.prototype.update = function() {
 
 Zombie.prototype.attack = function () {
   // calculate nearest soldier and start moving towards it
+  console.log(this.getNearestSoldier());
   this.calculatePathToTarget(this.getNearestSoldier());
 }
 
@@ -53,39 +56,6 @@ Zombie.prototype.getNearestSoldier = function () {
     }
   }
   return nearest.soldier;
-}
-
-Zombie.prototype.calculatePathToTarget = function (target) {
-  var self = this;
-  this.pathfinder.setCallbackFunction(function(path) {
-    console.log(path);
-    self.moving = true;
-    self.movePath = path;
-  });
-
-  // TODO: recalculate path if soldier moved / dead
-  this.pathfinder.preparePathCalculation([this.layer.getTileX(this.world.x), this.layer.getTileY(this.world.y)], [this.layer.getTileX(target.world.x), this.layer.getTileY(target.world.y)]);
-  this.pathfinder.calculatePath();
-}
-
-Zombie.prototype.move = function () {
-  console.log ("navigate to " + this.movePath[0].x + ":" + this.movePath[0].y);
-  var targetPrecision = 10;
-  this.moveTargetX = this.movePath[0].x * 16 + 8;
-  this.moveTargetY = this.movePath[0].y * 16 + 8;
-  // check if target is reached
-  if (Math.abs(this.world.x - this.moveTargetX) < targetPrecision && Math.abs(this.world.y - this.moveTargetY) < targetPrecision) {
-    this.movePath.shift();
-    if (this.movePath.length === 0) {
-      this.moving = false;
-    }
-  }
-
-  this.game.physics.arcade.moveToXY(this, this.moveTargetX, this.moveTargetY, this.movingSpeed);
-}
-
-Zombie.prototype.getDistanceTo = function (x, y) {
-  return (Math.abs(this.world.x - x) + Math.abs(this.world.y - y)) / 2;
 }
 
 module.exports = Zombie;

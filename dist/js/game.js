@@ -15,14 +15,87 @@ window.onload = function () {
 
   game.state.start('boot');
 };
-},{"./states/boot":4,"./states/gameover":5,"./states/menu":6,"./states/play":7,"./states/preload":8}],2:[function(require,module,exports){
+},{"./states/boot":5,"./states/gameover":6,"./states/menu":7,"./states/play":8,"./states/preload":9}],2:[function(require,module,exports){
 'use strict';
 
-var Soldier = function(game, x, y, frame) {
+var Human = function(game, x, y, key, map, layer) {
+  console.log("CONSTRUCTOR");
+  console.log(game);
+  console.log(map);
+  Phaser.Sprite.call(this, game, x, y, key);
+
+  this.game = game;
+  this.map = map;
+  this.layer = layer;
+
+  this.pathfinder = this.game.plugins.add(Phaser.Plugin.PathFinderPlugin);
+  this.pathfinder.setGrid(this.map.layers[0].data, [3]);
+
+  // initialize your prefab here
+
+  // move attributes
+  this.movePath = null;
+  this.targetPrecision = 5;
+  this.moving = false;
+  this.moveSpeed = 100;
+};
+
+Human.prototype = Object.create(Phaser.Sprite.prototype);
+Human.prototype.constructor = Human;
+
+Human.prototype.move = function () {
+  console.log(this.moveSpeed);
+
+    this.moveTargetX = this.movePath[0].x * 16 + 8;
+    this.moveTargetY = this.movePath[0].y * 16 + 8;
+    console.log(Math.abs(this.world.x - this.moveTargetX));
+    // check if target is reached
+    if (Math.abs(this.world.x - this.moveTargetX) < this.targetPrecision && Math.abs(this.world.y - this.moveTargetY) < this.targetPrecision) {
+      this.movePath.shift();
+      if (this.movePath.length === 0) {
+        console.log("target reached");
+        this.moving = false;
+      }
+    }
+    // this.rotation = this.game.physics.arcade.angleToPointer(this, pointer);
+    console.log("move from: " + this.world.x + ":" + this.world.y + " to: " + this.moveTargetX + ":" + this.moveTargetY);
+    console.log("speed: " + this.moveSpeed);
+    this.game.physics.arcade.moveToXY(this, this.moveTargetX, this.moveTargetY, this.moveSpeed);
+}
+
+Human.prototype.calculatePathToTarget = function (targetX, targetY) {
+  var self = this;
+  this.pathfinder = this.game.plugins.add(Phaser.Plugin.PathFinderPlugin);
+  this.pathfinder.setGrid(this.map.layers[0].data, [3]);
+  this.pathfinder.setCallbackFunction(function(path) {
+    self.moving = true;
+    console.log(self.movePath);
+    self.movePath = path;
+    console.log(path[path.length - 1].x);
+  });
+
+  this.pathfinder.preparePathCalculation([this.layer.getTileX(this.world.x), this.layer.getTileY(this.world.y)], [this.layer.getTileX(targetX), this.layer.getTileY(targetY)]);
+  this.pathfinder.calculatePath();
+}
+
+Human.prototype.getDistanceTo = function (x, y) {
+  return (Math.abs(this.world.x - x) + Math.abs(this.world.y - y)) / 2;
+}
+
+
+
+module.exports = Human;
+
+},{}],3:[function(require,module,exports){
+'use strict';
+var Human = require('./human');
+
+var Soldier = function(game, x, y, frame, map, layer) {
   console.log("init soldier");
-  Phaser.Sprite.call(this, game, x, y, 'soldier', frame);
+  Human.call(this, game, x, y, 'soldier', map, layer);
+
   game.add.existing(this);
-  
+
   this.anchor.setTo(0.5, 0.5);
   this.game.physics.arcade.enableBody(this);
   this.body.setSize(10, 14, 2, 1);
@@ -32,10 +105,9 @@ var Soldier = function(game, x, y, frame) {
 
   this.moving = false;
   this.moveSpeed = 100;
-  console.log(this);
 };
 
-Soldier.prototype = Object.create(Phaser.Sprite.prototype);
+Soldier.prototype = Object.create(Human.prototype);
 Soldier.prototype.constructor = Soldier;
 
 Soldier.prototype.update = function() {
@@ -44,31 +116,16 @@ Soldier.prototype.update = function() {
   this.body.velocity.set(0);
 
   if (this.moving) {
-    // console.log("moving to " + this.moveTargetX + ":" + this.moveTargetY);
     this.move();
   }
 
 };
 
 Soldier.prototype.moveCommand = function (pointer) {
-  this.moving = true;
-  this.movePath = [{x: pointer.x, y: pointer.y}];
+  this.calculatePathToTarget(pointer.x, pointer.y);
 }
 
-Soldier.prototype.move = function () {
-    var targetPrecision = 3;
-    this.moveTargetX = this.movePath[0].x * 16 + 8;
-    this.moveTargetY = this.movePath[0].y * 16 + 8;
-    // check if target is reached
-    if (Math.abs(this.world.x - this.moveTargetX) < targetPrecision && Math.abs(this.world.y - this.moveTargetY) < targetPrecision) {
-      this.movePath.shift();
-      if (this.movePath.length === 0) {
-        this.moving = false;
-      }
-    }
-    // this.rotation = this.game.physics.arcade.angleToPointer(this, pointer);
-    this.game.physics.arcade.moveToXY(this, this.moveTargetX, this.moveTargetY, this.moveSpeed);
-}
+
 
 Soldier.prototype.moveAlongPath = function (path) {
   this.moving = true;
@@ -77,13 +134,16 @@ Soldier.prototype.moveAlongPath = function (path) {
 
 module.exports = Soldier;
 
-},{}],3:[function(require,module,exports){
+},{"./human":2}],4:[function(require,module,exports){
 'use strict';
+
+var Human = require('./human');
 
 var Zombie = function(game, x, y, frame, soldiers, map, layer) {
   Phaser.Sprite.call(this, game, x, y, 'zombie', frame);
-  game.add.existing(this);
-  
+  Human.call(this, game, map, layer);
+  game.add.existing(this, this.game, this.map, this.layer);
+
   // initialize your prefab here
   this.anchor.setTo(0.5, 0.5);
   this.game.physics.arcade.enableBody(this);
@@ -96,14 +156,13 @@ var Zombie = function(game, x, y, frame, soldiers, map, layer) {
   this.pathfinder.setGrid(this.map.layers[0].data, [3]);
   this.layer = layer;
 
-  this.moving = false;
-  this.movingSpeed = 300;
+  this.moveSpeed = 110;
 
   // instantly start attacking nearest soldier
-  this.attack();
+  // this.attack();
 };
 
-Zombie.prototype = Object.create(Phaser.Sprite.prototype);
+Zombie.prototype = Object.create(Human.prototype);
 Zombie.prototype.constructor = Zombie;
 
 
@@ -116,6 +175,7 @@ Zombie.prototype.update = function() {
 
 Zombie.prototype.attack = function () {
   // calculate nearest soldier and start moving towards it
+  console.log(this.getNearestSoldier());
   this.calculatePathToTarget(this.getNearestSoldier());
 }
 
@@ -135,42 +195,9 @@ Zombie.prototype.getNearestSoldier = function () {
   return nearest.soldier;
 }
 
-Zombie.prototype.calculatePathToTarget = function (target) {
-  var self = this;
-  this.pathfinder.setCallbackFunction(function(path) {
-    console.log(path);
-    self.moving = true;
-    self.movePath = path;
-  });
-
-  // TODO: recalculate path if soldier moved / dead
-  this.pathfinder.preparePathCalculation([this.layer.getTileX(this.world.x), this.layer.getTileY(this.world.y)], [this.layer.getTileX(target.world.x), this.layer.getTileY(target.world.y)]);
-  this.pathfinder.calculatePath();
-}
-
-Zombie.prototype.move = function () {
-  console.log ("navigate to " + this.movePath[0].x + ":" + this.movePath[0].y);
-  var targetPrecision = 10;
-  this.moveTargetX = this.movePath[0].x * 16 + 8;
-  this.moveTargetY = this.movePath[0].y * 16 + 8;
-  // check if target is reached
-  if (Math.abs(this.world.x - this.moveTargetX) < targetPrecision && Math.abs(this.world.y - this.moveTargetY) < targetPrecision) {
-    this.movePath.shift();
-    if (this.movePath.length === 0) {
-      this.moving = false;
-    }
-  }
-
-  this.game.physics.arcade.moveToXY(this, this.moveTargetX, this.moveTargetY, this.movingSpeed);
-}
-
-Zombie.prototype.getDistanceTo = function (x, y) {
-  return (Math.abs(this.world.x - x) + Math.abs(this.world.y - y)) / 2;
-}
-
 module.exports = Zombie;
 
-},{}],4:[function(require,module,exports){
+},{"./human":2}],5:[function(require,module,exports){
 
 'use strict';
 
@@ -189,7 +216,7 @@ Boot.prototype = {
 
 module.exports = Boot;
 
-},{}],5:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 
 'use strict';
 function GameOver() {}
@@ -217,7 +244,7 @@ GameOver.prototype = {
 };
 module.exports = GameOver;
 
-},{}],6:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 
 'use strict';
 function Menu() {}
@@ -249,7 +276,7 @@ Menu.prototype = {
 
 module.exports = Menu;
 
-},{}],7:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 
   'use strict';
 
@@ -296,7 +323,7 @@ module.exports = Menu;
 
       // zombies
       console.log(this.map);
-      this.zombie = new Zombie(this.game, 450, 100, null, this.soldiers, this.map, this.layer);
+      // this.zombie = new Zombie(this.game, 450, 100, null, this.soldiers, this.map, this.layer);
     },
     update: function() {
       for (var i = 0, len = this.soldiers.length; i < len; i++) {
@@ -306,23 +333,15 @@ module.exports = Menu;
     },
     clickListener: function(pointer) {
       if (this.selectedSoldier) {
-        this.findPathTo(pointer);
+        this.selectedSoldier.moveCommand(pointer);
+        // this.findPathTo(pointer);
         this.selectedSoldier = null;
       }
-    },
-    findPathTo: function (pointer) {
-      var self = this;
-      this.pathfinder.setCallbackFunction(function(path) {
-        self.selectedSoldier.moveAlongPath(path);
-      });
-
-      this.pathfinder.preparePathCalculation([this.layer.getTileX(this.selectedSoldier.world.x), this.layer.getTileY(this.selectedSoldier.world.y)], [this.layer.getTileX(pointer.x),this.layer.getTileY(pointer.y)]);
-      this.pathfinder.calculatePath();
     },
     soldiers: [],
     spawnSoldiers: function (soldierCount) {
       for (var i = 0; i < soldierCount; i++) {
-        this.soldiers.push(new Soldier(this.game, this.spawnLocations[i].x, this.spawnLocations[i].y));
+        this.soldiers.push(new Soldier(this.game, this.spawnLocations[i].x, this.spawnLocations[i].y, null, this.map, this.layer));
         // add click listener
         this.soldiers[this.soldiers.length - 1].events.onInputDown.add(this.soldierClickListener, this);
       }
@@ -336,7 +355,7 @@ module.exports = Menu;
 
   module.exports = Play;
 
-},{"../prefabs/soldier":2,"../prefabs/zombie":3}],8:[function(require,module,exports){
+},{"../prefabs/soldier":3,"../prefabs/zombie":4}],9:[function(require,module,exports){
 
 'use strict';
 function Preload() {
